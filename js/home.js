@@ -277,50 +277,82 @@ document.addEventListener('DOMContentLoaded', function() {
   // 별빛 효과 생성
   createStars();
 
-  // 메인 선택지 → 프로젝트
-  if (findProjectsBtn) {
-    findProjectsBtn.addEventListener('click', () => {
-      projectsSection.classList.remove('hidden');
-      document.querySelector('.choice').classList.add('hidden');
-      renderProjects();
-    });
-  }
-
-  // 메인 선택지 → 팀원
-  if (findMembersBtn) {
-    findMembersBtn.addEventListener('click', () => {
-      membersSection.classList.remove('hidden');
-      document.querySelector('.choice').classList.add('hidden');
-      renderMembers();
-    });
-  }
-
-  // 뒤로가기
-  backBtns.forEach(btn => {
-    if (btn.id === 'register-project-btn') {
-      btn.onclick = () => {
-        projectsSection.classList.remove('fade-in');
-        setTimeout(() => {
-          projectsSection.classList.add('hidden');
-          registerProjectSection.classList.remove('hidden');
-          setTimeout(() => {
-            registerProjectSection.classList.add('fade-in');
-          }, 100);
-        }, 300);
-      };
-    } else if (btn.id === 'register-member-btn') {
-      btn.onclick = () => {
-        membersSection.classList.remove('fade-in');
-        setTimeout(() => {
-          membersSection.classList.add('hidden');
-          registerMemberSection.classList.remove('hidden');
-          setTimeout(() => {
-            registerMemberSection.classList.add('fade-in');
-          }, 100);
-        }, 300);
-      };
+  // 초기화 함수
+  function initialize() {
+    // 프로젝트 목록 초기화
+    if (projectList) {
+      renderProjects("전체");
     }
-  });
+
+    // 팀원 목록 초기화
+    if (memberCategories) {
+      renderMembers("전체");
+    }
+
+    // 이벤트 리스너 등록
+    if (findProjectsBtn) {
+      findProjectsBtn.addEventListener('click', () => {
+        projectsSection.classList.remove('hidden');
+        document.querySelector('.choice').classList.add('hidden');
+        renderProjects();
+      });
+    }
+
+    if (findMembersBtn) {
+      findMembersBtn.addEventListener('click', () => {
+        membersSection.classList.remove('hidden');
+        document.querySelector('.choice').classList.add('hidden');
+        renderMembers();
+      });
+    }
+
+    // 모달 관련 이벤트 리스너
+    if (profileModal && closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        profileModal.classList.add('hidden');
+      });
+
+      window.addEventListener('click', (e) => {
+        if (e.target === profileModal) {
+          profileModal.classList.add('hidden');
+        }
+      });
+    }
+
+    // 역할 탭 이벤트 리스너
+    roleTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const role = tab.dataset.role;
+        roleTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        renderMembers(role);
+      });
+    });
+
+    // 프로젝트 등록 버튼
+    if (registerProjectBtn) {
+      registerProjectBtn.addEventListener('click', showProjectForm);
+    }
+
+    // 팀원 등록 버튼
+    if (registerMemberBtn) {
+      registerMemberBtn.addEventListener('click', showMemberForm);
+    }
+
+    // 뒤로가기 버튼들
+    backBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const section = btn.closest('section');
+        if (section) {
+          section.classList.add('hidden');
+          document.querySelector('.choice').classList.remove('hidden');
+        }
+      });
+    });
+  }
+
+  // 초기화 실행
+  initialize();
 
   // 프로젝트 카테고리 탭 추가
   function addProjectCategoryTabs() {
@@ -638,45 +670,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 모달 표시
     profileModal.classList.remove('hidden');
     profileModal.classList.add('visible');
-  }
-
-  // 모달 닫기
-  if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-      profileModal.classList.add('hidden');
-    });
-
-    window.addEventListener('click', (e) => {
-      if (e.target === profileModal) {
-        profileModal.classList.add('hidden');
-      }
-    });
-  }
-
-  // 검색 기능 - 검색바를 제거했으므로 이 코드는 더 이상 필요 없음
-  // searchBar.addEventListener('input', (e) => { ... });
-
-  // 역할 탭 필터링
-  roleTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      // 활성 탭 변경
-      roleTabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      
-      const role = tab.getAttribute('data-role');
-      
-      // 선택한 역할로 팀원 렌더링
-      renderMembers(role);
-    });
-  });
-
-  // 역할 필터링 및 팀원 카테고리 탭 컨테이너 수정
-  function filterMembersByRole(role) {
-    // 등록하기 버튼 추가
-    addMemberRegisterButton();
-    
-    // 역할에 따라 필터링하여 다시 렌더링
-    renderMembers(role);
   }
 
   // 프로젝트 등록 폼 표시
@@ -1374,8 +1367,4 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
-
-  // 초기 렌더링
-  renderProjects();
-  renderMembers();
 });
